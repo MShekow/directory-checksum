@@ -1,4 +1,5 @@
 # Directory Checksum
+
 ![Coverage](https://img.shields.io/badge/Coverage-96.6%25-brightgreen)
 ![CI](https://github.com/MShekow/directory-checksum/actions/workflows/ci.yml/badge.svg)
 ![CD](https://github.com/MShekow/directory-checksum/actions/workflows/cd.yml/badge.svg)
@@ -72,7 +73,9 @@ Thanks to _Directory Checksum_, you can now easily debug the problem, by modifyi
       with the appropriate [binary release](https://github.com/MShekow/directory-checksum/releases) of _Directory
       Checksum_.
     - If you use _BuildKit_, _Buildah_ or some other build engine that supports `ADD --chmod`, you can
-      use `ADD --chmod=755 <URL> /usr/local/bin/directory-checksum`
+      use `ADD --chmod=755 <URL> /usr/local/bin/directory-checksum`. You may need to put the
+      line `# syntax=docker/dockerfile:1` as first line into your `Dockerfile` to use an updated _frontend_,
+      see [here](https://docs.docker.com/build/buildkit/dockerfile-frontend/)
 - Add a statement such as `RUN directory-checksum --max-depth 2 .` to print the checksums of the directory.
     - Replace `2` with any other depth-level, if desired. A too large number will produce too much output, a too small
       number may provide too few details (especially when something changed in the deeper levels of the folder
