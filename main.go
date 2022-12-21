@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/MShekow/directory-checksum/directory_checksum"
+	"github.com/spf13/afero"
 	"log"
 	"os"
 )
@@ -35,8 +36,14 @@ func main() {
 	}
 
 	root := flag.Arg(0)
-	directory := directory_checksum.ScanDirectory(root)
-	directory.ComputeDirectoryChecksums()
-	output := directory.PrintChecksums(".", maxDepth)
+	directory, err := directory_checksum.ScanDirectory(root, afero.NewOsFs(), directory_checksum.OsWrapperNative{})
+	if err != nil {
+		log.Fatalf("Unable to scan the directory: %v", err)
+	}
+	_, err = directory.ComputeDirectoryChecksums()
+	if err != nil {
+		log.Fatalf("Unexpected error while computing directory checksums: %v", err)
+	}
+	output := directory.PrintChecksums(maxDepth)
 	fmt.Print(output)
 }

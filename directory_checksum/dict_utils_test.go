@@ -25,11 +25,11 @@ func TestSortedKeys(t *testing.T) {
 	want := []string{"A", "B", "C", "D", "E", "F"}
 
 	if reflect.DeepEqual(want, unordered_keys) {
-		t.Errorf("Unordered keys were already ordered, this may never happen")
+		t.Fatalf("Unordered keys were already ordered, this may never happen")
 	}
 
 	got := sortedKeys(m)
 	if !reflect.DeepEqual(want, got) {
-		t.Errorf("Got %v, want %v", got, want)
+		t.Fatalf("Got %v, want %v", got, want)
 	}
 }
