@@ -1,0 +1,38 @@
+builds:
+  - goos:
+      - linux
+      - darwin
+      - windows
+
+    # Defaults are 386, amd64 and arm64.
+    goarch:
+      - amd64
+      - arm
+      - arm64
+
+    # Default is only 6.
+    goarm:
+      - "6"
+      - "7"
+
+    # Default is only v1.
+    goamd64:
+      - v1
+      - v2
+      - v3
+
+    # List of combinations of GOOS + GOARCH + GOARM to ignore.
+    # Default is empty.
+#    ignore:
+#      - goos: darwin
+#        goarch: 386
+#      - goos: linux
+#        goarch: arm
+#        goarm: 7
+#      - goarm: mips64
+#      - gomips: hardfloat
+#      - goamd64: v4
+
+# Disable compressing builds as ".tar.gz" file
+archives:
+  - format: binary
