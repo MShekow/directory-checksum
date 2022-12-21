@@ -8,6 +8,8 @@ import (
 	"os"
 )
 
+const version = "1.0"
+
 var maxDepth int
 
 func init() {
@@ -17,7 +19,7 @@ func init() {
 func main() {
 	flag.CommandLine.SetOutput(os.Stdout) // ensure that flag.PrintDefaults() does NOT print to stderr by default
 	flag.Usage = func() {
-		fmt.Println("Usage of Directory Checksum Tool v1.0:")
+		fmt.Printf("Usage of Directory Checksum Tool %s:\n\n", version)
 		fmt.Println("directory-checksum [--max-depth=N] <path>")
 		flag.PrintDefaults()
 		os.Exit(1)
