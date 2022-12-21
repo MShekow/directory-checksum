@@ -21,6 +21,10 @@ builds:
       - v2
       - v3
 
+    # Compile static binary that also works e.g. on Alpine Linux
+    env:
+      - CGO_ENABLED=0
+
     # List of combinations of GOOS + GOARCH + GOARM to ignore.
     # Default is empty.
 #    ignore:
