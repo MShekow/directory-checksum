@@ -1,4 +1,5 @@
 # Directory Checksum
+![Coverage](https://img.shields.io/badge/Coverage-93.0%25-brightgreen)
 
 This tool recursively computes the checksum of the contents of a directory, and prints the checksums up to a depth you
 can specify.
