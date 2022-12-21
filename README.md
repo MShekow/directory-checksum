@@ -1,5 +1,7 @@
 # Directory Checksum
 ![Coverage](https://img.shields.io/badge/Coverage-93.0%25-brightgreen)
+![CI](https://github.com/MShekow/directory-checksum/actions/workflows/ci.yml/badge.svg)
+![CD](https://github.com/MShekow/directory-checksum/actions/workflows/cd.yml/badge.svg)
 
 This tool recursively computes the checksum of the contents of a directory, and prints the checksums up to a depth you
 can specify.
