@@ -3,24 +3,23 @@ package directory_checksum
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"github.com/spf13/afero"
 	"io"
-	"log"
-	"os"
 )
 
 // computeChecksum computes the SHA-1 digest of the file located at absoluteFilePath and returns it as string that
 // represents the digest with hexadecimal notation.
-func computeChecksum(absoluteFilePath string) string {
-	f, err := os.Open(absoluteFilePath)
+func computeChecksum(absoluteFilePath string, filesystemImpl afero.Fs) (string, error) {
+	f, err := filesystemImpl.Open(absoluteFilePath)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	defer f.Close()
 
 	h := sha1.New()
 	if _, err := io.Copy(h, f); err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
-	return hex.EncodeToString(h.Sum(nil))
+	return hex.EncodeToString(h.Sum(nil)), nil
 }

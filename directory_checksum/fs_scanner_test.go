@@ -1,8 +1,11 @@
 package directory_checksum
 
 import (
+	"errors"
 	"fmt"
+	"github.com/spf13/afero"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -10,12 +13,12 @@ import (
 const emptySha1 = "da39a3ee5e6b4b0d3255bfef95601890afd80709"
 
 type TestingFilesystemObject interface {
-	Create()
+	Create(filesystemImpl afero.Fs)
 }
 
-func setUpTestingFilesystem(filesystemObjects []TestingFilesystemObject) {
+func setUpTestingFilesystem(filesystemObjects []TestingFilesystemObject, filesystemImpl afero.Fs) {
 	for _, fso := range filesystemObjects {
-		fso.Create()
+		fso.Create(filesystemImpl)
 	}
 }
 
@@ -28,53 +31,54 @@ type TestingDir struct {
 	absolutePath string
 }
 
-func (file TestingFile) Create() {
-	f, _ := os.Create(file.absolutePath)
+func (file TestingFile) Create(filesystemImpl afero.Fs) {
+	f, _ := filesystemImpl.Create(file.absolutePath)
 	f.WriteString(file.content)
 	f.Close()
 }
 
-func (dir TestingDir) Create() {
-	os.Mkdir(dir.absolutePath, os.ModePerm)
+func (dir TestingDir) Create(filesystemImpl afero.Fs) {
+	filesystemImpl.Mkdir(dir.absolutePath, os.ModePerm)
 }
 
 func TestDeterministicResult(t *testing.T) {
 	// Tests whether two consecutive runs of ScanDirectory() produce the same output
-	tempDir := t.TempDir()
+	tempDir := t.TempDir() // TODO get rid of TempDir?
 	testingFilesystem := []TestingFilesystemObject{
 		TestingDir{absolutePath: tempDir + "/d"},
 		TestingDir{absolutePath: tempDir + "/d/sub"},
 		TestingFile{absolutePath: tempDir + "/f", content: "foo"},
 	}
-	setUpTestingFilesystem(testingFilesystem)
+	filesystemImpl := afero.NewMemMapFs()
+	setUpTestingFilesystem(testingFilesystem, filesystemImpl)
 
-	d1 := ScanDirectory(tempDir)
+	d1, _ := ScanDirectory(tempDir, filesystemImpl, OsWrapperNative{})
 	d1.ComputeDirectoryChecksums()
-	output1 := d1.PrintChecksums(tempDir, 3)
+	output1 := d1.PrintChecksums(3)
 
-	d2 := ScanDirectory(tempDir)
+	d2, _ := ScanDirectory(tempDir, filesystemImpl, OsWrapperNative{})
 	d2.ComputeDirectoryChecksums()
-	output2 := d2.PrintChecksums(tempDir, 3)
+	output2 := d2.PrintChecksums(3)
 
 	if output1 != output2 {
-		t.Errorf("Outputs differ:\noutput1:\n%s\n\noutput2:\n%s", output1, output2)
+		t.Fatalf("Outputs differ:\noutput1:\n%s\n\noutput2:\n%s", output1, output2)
 	}
 
 	expectedNewlineCount := len(testingFilesystem) + 2 // one for the root dir, one for the trailing newline
 
 	if l := len(strings.Split(output1, "\n")); l != expectedNewlineCount {
-		t.Errorf("Got %d newlines, expected %d", l, expectedNewlineCount)
+		t.Fatalf("Got %d newlines, expected %d", l, expectedNewlineCount)
 	}
 }
 
 func TestEmptyDirectory(t *testing.T) {
 	tempDir := t.TempDir()
-	d := ScanDirectory(tempDir)
+	d, _ := ScanDirectory(tempDir, afero.NewOsFs(), OsWrapperNative{})
 	d.ComputeDirectoryChecksums()
-	got := d.PrintChecksums(tempDir, 3)
-	want := fmt.Sprintf("%s D %s\n", emptySha1, tempDir)
+	got := d.PrintChecksums(3)
+	want := fmt.Sprintf("%s D .\n", emptySha1)
 	if got != want {
-		t.Errorf("Got %s, want %s", got, want)
+		t.Fatalf("Got %s, want %s", got, want)
 	}
 }
 
@@ -84,17 +88,18 @@ func TestSingleFile(t *testing.T) {
 	testingFilesystem := []TestingFilesystemObject{
 		TestingFile{absolutePath: tempDir + "/f", content: "foo"},
 	}
-	setUpTestingFilesystem(testingFilesystem)
+	filesystemImpl := afero.NewMemMapFs()
+	setUpTestingFilesystem(testingFilesystem, filesystemImpl)
 
-	d := ScanDirectory(tempDir)
+	d, _ := ScanDirectory(tempDir, filesystemImpl, OsWrapperNative{})
 	d.ComputeDirectoryChecksums()
-	got := d.PrintChecksums(tempDir, 1)
+	got := d.PrintChecksums(1)
 
-	want := fmt.Sprintf("beb8daa61290acf19e174a689715f32c51b644b6 D %s\n"+
-		"0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33 F %s%sf\n", tempDir, tempDir, string(os.PathSeparator))
+	want := "beb8daa61290acf19e174a689715f32c51b644b6 D .\n" +
+		"0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33 F f\n"
 
 	if got != want {
-		t.Errorf("Got\n%s\n\nwant\n%s", got, want)
+		t.Fatalf("Got\n%s\n\nwant\n%s", got, want)
 	}
 }
 
@@ -104,49 +109,131 @@ func TestSingleDir(t *testing.T) {
 	testingFilesystem := []TestingFilesystemObject{
 		TestingDir{absolutePath: tempDir + "/dir"},
 	}
-	setUpTestingFilesystem(testingFilesystem)
+	filesystemImpl := afero.NewMemMapFs()
+	setUpTestingFilesystem(testingFilesystem, filesystemImpl)
 
-	d := ScanDirectory(tempDir)
+	d, _ := ScanDirectory(tempDir, filesystemImpl, OsWrapperNative{})
 	d.ComputeDirectoryChecksums()
-	got := d.PrintChecksums(tempDir, 1)
+	got := d.PrintChecksums(1)
 
-	want := fmt.Sprintf("365f7001add79c757b245c386b444aca93a73d40 D %s\n"+
-		"da39a3ee5e6b4b0d3255bfef95601890afd80709 D %s%sdir\n", tempDir, tempDir, string(os.PathSeparator))
+	want := "365f7001add79c757b245c386b444aca93a73d40 D .\n" +
+		"da39a3ee5e6b4b0d3255bfef95601890afd80709 D dir\n"
 
 	if got != want {
-		t.Errorf("Got\n%s\n\nwant\n%s", got, want)
+		t.Fatalf("Got\n%s\n\nwant\n%s", got, want)
 	}
 }
 
 func TestLimitingMaxDepth(t *testing.T) {
 	// Tests that the output when limiting maximum depth has the expected number of entries
-	tempDir := t.TempDir()
 	testingFilesystem := []TestingFilesystemObject{
-		TestingDir{absolutePath: tempDir + "/d"},                         // level 1
-		TestingDir{absolutePath: tempDir + "/d/sub"},                     // level 2
-		TestingFile{absolutePath: tempDir + "/d/sub/f", content: "foo"},  // level 3
-		TestingFile{absolutePath: tempDir + "/d/sub/f2", content: "foo"}, // level 3
+		TestingDir{absolutePath: filepath.FromSlash("/d")},                         // level 1
+		TestingDir{absolutePath: filepath.FromSlash("/d/sub")},                     // level 2
+		TestingFile{absolutePath: filepath.FromSlash("/d/sub/f"), content: "foo"},  // level 3
+		TestingFile{absolutePath: filepath.FromSlash("/d/sub/f2"), content: "foo"}, // level 3
 	}
-	setUpTestingFilesystem(testingFilesystem)
+	filesystemImpl := afero.NewMemMapFs()
+	setUpTestingFilesystem(testingFilesystem, filesystemImpl)
+	root := string(os.PathSeparator)
 
-	d := ScanDirectory(tempDir)
+	d, _ := ScanDirectory(root, filesystemImpl, OsWrapperNative{})
 	d.ComputeDirectoryChecksums()
 
-	outputDepth0 := d.PrintChecksums(tempDir, 0)
+	outputDepth0 := d.PrintChecksums(0)
 	gotLinesDepth0 := len(strings.Split(outputDepth0, "\n"))
 	if gotLinesDepth0 != 2 {
-		t.Errorf("For depth 0, got %d lines, but expected 2", gotLinesDepth0)
+		t.Fatalf("For depth 0, got %d lines, but expected 2", gotLinesDepth0)
 	}
 
-	outputDepth1 := d.PrintChecksums(tempDir, 1)
+	outputDepth1 := d.PrintChecksums(1)
 	gotLinesDepth1 := len(strings.Split(outputDepth1, "\n"))
 	if gotLinesDepth1 != 3 {
-		t.Errorf("For depth 1, got %d lines, but expected 3", gotLinesDepth1)
+		t.Fatalf("For depth 1, got %d lines, but expected 3", gotLinesDepth1)
 	}
 
-	outputDepth2 := d.PrintChecksums(tempDir, 2)
+	outputDepth2 := d.PrintChecksums(2)
 	gotLinesDepth2 := len(strings.Split(outputDepth2, "\n"))
 	if gotLinesDepth2 != 4 {
-		t.Errorf("For depth 1, got %d lines, but expected 4", gotLinesDepth2)
+		t.Fatalf("For depth 1, got %d lines, but expected 4", gotLinesDepth2)
+	}
+}
+
+func TestNonExistingDirectory(t *testing.T) {
+	filesystemImpl := afero.NewMemMapFs()
+	_, err := ScanDirectory("/does/not/exist", filesystemImpl, OsWrapperNative{})
+
+	if err == nil {
+		t.Fatal("Expected error but did not get any")
+	}
+	if !strings.Contains(err.Error(), "file does not exist") {
+		t.Fatalf("Unexpected error was returned: %v", err)
+	}
+}
+
+func TestFilePath(t *testing.T) {
+	filesystemImpl := afero.NewOsFs()
+	root := filepath.Join(t.TempDir(), "file")
+	f, _ := filesystemImpl.Create(root)
+	f.Close()
+	_, err := ScanDirectory(root, filesystemImpl, OsWrapperNative{})
+	if err == nil {
+		t.Fatal("Expected error but did not get any")
+	}
+	if !strings.Contains(err.Error(), "root path must point to a directory") {
+		t.Fatalf("Unexpected error was returned: %v", err)
+	}
+}
+
+func TestDotRoot(t *testing.T) {
+	filesystemImpl := afero.NewOsFs()
+	d, _ := ScanDirectory(".", filesystemImpl, OsWrapperNative{})
+	d.ComputeDirectoryChecksums()
+	got := d.PrintChecksums(1)
+	wantLines := len(strings.Split(got, "\n"))
+	if wantLines < 5 {
+		t.Fatalf("Expected at least 5 lines of output, but got this:\n%s", got)
+	}
+}
+
+type BrokenOsWrapper struct {
+	errorMessage string
+}
+
+func (brokenOsWrapper BrokenOsWrapper) Getwd() (dir string, err error) {
+	dir = ""
+	err = errors.New(brokenOsWrapper.errorMessage)
+	return
+}
+
+func TestDotRootWithBrokenGetwd(t *testing.T) {
+	filesystemImpl := afero.NewOsFs()
+	expectedErrorMsg := "InjectedError"
+	brokenOsWrapper := BrokenOsWrapper{errorMessage: expectedErrorMsg}
+	_, err := ScanDirectory(".", filesystemImpl, brokenOsWrapper)
+
+	if err == nil {
+		t.Fatal("Expected error but did not get any")
+	}
+	if err.Error() != expectedErrorMsg {
+		t.Fatalf("Unexpected error was returned: %v", err)
+	}
+}
+
+func TestScanWithUnreadableFile(t *testing.T) {
+	testingFilesystem := []TestingFilesystemObject{
+		TestingDir{absolutePath: filepath.FromSlash("/d")},    // level 1
+		TestingFile{absolutePath: filepath.FromSlash("/d/f")}, // level 2
+	}
+	filesystemImpl := afero.NewMemMapFs()
+	setUpTestingFilesystem(testingFilesystem, filesystemImpl)
+	root := string(os.PathSeparator)
+
+	wrapper := fsWrapper{filesystemImpl}
+	filesystemImpl = &wrapper
+
+	_, err := ScanDirectory(root, filesystemImpl, OsWrapperNative{})
+
+	if err == nil {
+		t.Fatal("Expected error but did not get any")
 	}
 }
