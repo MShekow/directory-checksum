@@ -4,9 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"github.com/MShekow/directory-checksum/directory_checksum"
+	"github.com/spf13/afero"
 	"log"
 	"os"
 )
+
+const version = "1.0"
 
 var maxDepth int
 
@@ -17,7 +20,7 @@ func init() {
 func main() {
 	flag.CommandLine.SetOutput(os.Stdout) // ensure that flag.PrintDefaults() does NOT print to stderr by default
 	flag.Usage = func() {
-		fmt.Println("Usage of Directory Checksum Tool v1.0:")
+		fmt.Printf("Usage of Directory Checksum Tool %s:\n\n", version)
 		fmt.Println("directory-checksum [--max-depth=N] <path>")
 		flag.PrintDefaults()
 		os.Exit(1)
@@ -33,8 +36,14 @@ func main() {
 	}
 
 	root := flag.Arg(0)
-	directory := directory_checksum.ScanDirectory(root)
-	directory.ComputeDirectoryChecksums()
-	output := directory.PrintChecksums(".", maxDepth)
+	directory, err := directory_checksum.ScanDirectory(root, afero.NewOsFs(), directory_checksum.OsWrapperNative{})
+	if err != nil {
+		log.Fatalf("Unable to scan the directory: %v", err)
+	}
+	_, err = directory.ComputeDirectoryChecksums()
+	if err != nil {
+		log.Fatalf("Unexpected error while computing directory checksums: %v", err)
+	}
+	output := directory.PrintChecksums(maxDepth)
 	fmt.Print(output)
 }

@@ -1,4 +1,7 @@
 # Directory Checksum
+![Coverage](https://img.shields.io/badge/Coverage-96.6%25-brightgreen)
+![CI](https://github.com/MShekow/directory-checksum/actions/workflows/ci.yml/badge.svg)
+![CD](https://github.com/MShekow/directory-checksum/actions/workflows/cd.yml/badge.svg)
 
 This tool recursively computes the checksum of the contents of a directory, and prints the checksums up to a depth you
 can specify.
@@ -66,7 +69,8 @@ Thanks to _Directory Checksum_, you can now easily debug the problem, by modifyi
 - Add the `directory-checksum` binary to your image, in some layer that _precedes_ the problematic `COPY`/`ADD` layer:
     - You may want to use a statement such as `ADD <URL> /usr/local/bin/directory-checksum` followed
       by `RUN chmod +x /usr/local/bin/directory-checksum`, to avoid that you first have install `curl`. Replace `<URL>`
-      with the appropriate binary release of _Directory Checksum_.
+      with the appropriate [binary release](https://github.com/MShekow/directory-checksum/releases) of _Directory
+      Checksum_.
     - If you use _BuildKit_, _Buildah_ or some other build engine that supports `ADD --chmod`, you can
       use `ADD --chmod=755 <URL> /usr/local/bin/directory-checksum`
 - Add a statement such as `RUN directory-checksum --max-depth 2 .` to print the checksums of the directory.
