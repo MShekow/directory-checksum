@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"golang-exp1/directory_checksum"
+	"github.com/MShekow/directory-checksum/directory_checksum"
 	"log"
 	"os"
 )
