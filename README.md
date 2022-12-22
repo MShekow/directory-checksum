@@ -7,7 +7,8 @@
 This tool recursively computes the checksum of the contents of a directory, and prints the checksums up to a depth you
 can specify.
 
-_Symbolic links_ are ignored and are not followed.
+**Symbolic links** to _files_ are followed (the hash is computed for the link target content). Symbolic links to
+_directories_ are not followed, but the link _source_ appears in the output of this tool, with a pseudo 0-checksum.
 
 This tool is a _proper_ (as in: actually working) alternative to tools that ignore _empty_ directories, such
 as [md5deep](https://md5deep.sourceforge.net/), or chaining UNIX such as `find` and `md5sum` (see
@@ -54,7 +55,7 @@ Explanation of columns:
       ignored
     - For _directories_, the checksum is the **SHA-1** checksum of a long string that represents the listing of the
       _immediate_ children, only considering their _names_ and checksums
-- Second column: `D`=_directory_, `F`=_file_
+- Second column: `D`=_directory_, `F`=_file_, `S`=_symbolic link to directory_
 - Third column: the path _relative_ to the scanned directory's path
 
 Note: the first line always shows the checksum of the scanned directory itself.
