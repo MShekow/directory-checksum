@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 )
 
@@ -44,6 +45,7 @@ func (d *Directory) ComputeDirectoryChecksums() (string, error) {
 		}
 		_, err = io.WriteString(hasher, fmt.Sprintf("'%s' %s\n", dirName, childDirChecksum))
 		if err != nil {
+			debug.PrintStack()
 			return "", err
 		}
 	}
@@ -51,6 +53,7 @@ func (d *Directory) ComputeDirectoryChecksums() (string, error) {
 		childFileChecksum := d.files[fileName]
 		_, err := io.WriteString(hasher, fmt.Sprintf("'%s' %s\n", fileName, childFileChecksum))
 		if err != nil {
+			debug.PrintStack()
 			return "", err
 		}
 	}
@@ -107,6 +110,7 @@ func (d *Directory) Add(relativeRemainingPath string, relativePath string, absol
 			absoluteFilePath := filepath.Join(absoluteRootPath, relativePath)
 			fileChecksum, err := computeChecksum(absoluteFilePath, filesystemImpl)
 			if err != nil {
+				debug.PrintStack()
 				return err
 			}
 			d.files[relativeRemainingPath] = fileChecksum

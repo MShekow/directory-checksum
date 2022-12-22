@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/afero"
 	"io/fs"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 )
 
@@ -35,6 +36,7 @@ func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs, osWrapper O
 	if absoluteRootPath == "." {
 		absRoot, err := osWrapper.Getwd()
 		if err != nil {
+			debug.PrintStack()
 			return nil, err
 		}
 		absoluteRootPath = absRoot
@@ -43,6 +45,7 @@ func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs, osWrapper O
 	directory := newDirectory()
 	err := afero.Walk(filesystemImpl, absoluteRootPath, func(relativePath string, info fs.FileInfo, err error) error {
 		if err != nil {
+			debug.PrintStack()
 			return err
 		}
 		// Walk() is happy to walk a FILE (instead of a dir) -> we have to manually check that a dir path was provided
@@ -60,6 +63,7 @@ func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs, osWrapper O
 		return nil
 	})
 	if err != nil {
+		debug.PrintStack()
 		return nil, err
 	}
 

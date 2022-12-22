@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/afero"
 	"log"
 	"os"
+	"runtime/debug"
 )
 
 const version = "1.0"
@@ -38,6 +39,7 @@ func main() {
 	root := flag.Arg(0)
 	directory, err := directory_checksum.ScanDirectory(root, afero.NewOsFs(), directory_checksum.OsWrapperNative{})
 	if err != nil {
+		debug.PrintStack()
 		log.Fatalf("Unable to scan the directory: %v", err)
 	}
 	_, err = directory.ComputeDirectoryChecksums()
