@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/spf13/afero"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"runtime/debug"
 	"strings"
@@ -29,6 +30,31 @@ func bendRelativePath(relativePath, absoluteRootPath string) string {
 	return relativePath
 }
 
+func isSymbolicLinkToDirectory(relativePath, absoluteRootPath string, filesystemImpl afero.Fs) (bool, error) {
+	linkReader, ok := filesystemImpl.(afero.LinkReader)
+	if !ok {
+		return false, nil
+	}
+
+	absolutePath := filepath.Join(absoluteRootPath, relativePath)
+	linkTarget, err := linkReader.ReadlinkIfPossible(absolutePath)
+	if err != nil {
+		debug.PrintStack()
+		return false, err
+	}
+
+	if !filepath.IsAbs(linkTarget) {
+		linkTarget = filepath.Join(absoluteRootPath, filepath.Dir(relativePath), linkTarget)
+	}
+
+	stat, err := filesystemImpl.Stat(linkTarget)
+	if err != nil {
+		debug.PrintStack()
+		return false, err
+	}
+	return stat.IsDir(), nil
+}
+
 // ScanDirectory returns the pointer to a (hierarchically-nested) Directory that is constructed from recursively walking
 // the directory located at absoluteRootPath.
 func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs) (*Directory, error) {
@@ -42,7 +68,7 @@ func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs) (*Directory
 		absoluteRootPath = absRootPath
 	}
 
-	directory := newDirectory()
+	directory := newDirectory(false)
 	err := afero.Walk(filesystemImpl, absoluteRootPath, func(relativePath string, info fs.FileInfo, err error) error {
 		if err != nil {
 			debug.PrintStack()
@@ -55,7 +81,22 @@ func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs) (*Directory
 
 		if relativePath != absoluteRootPath {
 			relativePath = bendRelativePath(relativePath, absoluteRootPath)
-			err := directory.Add(relativePath, relativePath, absoluteRootPath, info.IsDir(), filesystemImpl)
+
+			fileType := TypeFile
+			if info.IsDir() {
+				fileType = TypeDir
+			} else if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+				// We cannot trust the IsDir() output - it counts symbolic links to DIRS to be files
+				isDir, err := isSymbolicLinkToDirectory(relativePath, absoluteRootPath, filesystemImpl)
+				if err != nil {
+					return err
+				}
+				if isDir {
+					fileType = TypeDirSymlink
+				}
+			}
+
+			err := directory.Add(relativePath, relativePath, absoluteRootPath, fileType, filesystemImpl)
 			if err != nil {
 				return err
 			}

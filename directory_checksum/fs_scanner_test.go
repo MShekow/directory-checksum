@@ -3,6 +3,7 @@ package directory_checksum
 import (
 	"fmt"
 	"github.com/spf13/afero"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -210,5 +211,27 @@ func TestScanWithUnreadableFile(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("Expected error but did not get any")
+	}
+}
+
+func TestScanWithDirectorySymlink(t *testing.T) {
+	tempDir := t.TempDir()
+	filesystemImpl := afero.NewOsFs()
+	targetPath := filepath.Join(tempDir, "dir-target")
+	os.Mkdir(targetPath, fs.ModePerm)
+	err := os.Symlink(targetPath, filepath.Join(tempDir, "dir-source"))
+	if err != nil {
+		t.Skipf("Test skipped because creating the symbolic link failed (most likely cause is Windows, where "+
+			"admin privileges are required). Error: %v", err)
+	}
+	d, _ := ScanDirectory(tempDir, filesystemImpl)
+	d.ComputeDirectoryChecksums()
+	got := d.PrintChecksums(1)
+
+	want := "a268439d8e48cf54d10a7eb64b63c1902207dd40 D .\n" +
+		"0000000000000000000000000000000000000000 S dir-source\n" +
+		"da39a3ee5e6b4b0d3255bfef95601890afd80709 D dir-target\n"
+	if got != want {
+		t.Fatalf("Got\n%s\n\nwant\n%s", got, want)
 	}
 }
