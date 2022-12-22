@@ -3,7 +3,6 @@ package directory_checksum
 import (
 	"crypto/sha1"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"github.com/spf13/afero"
 	"io"
@@ -17,8 +16,8 @@ type FileType int64
 
 const (
 	TypeFile       FileType = 0
-	TypeDir                 = 1
-	TypeDirSymlink          = 2
+	TypeDir        FileType = 1
+	TypeDirSymlink FileType = 2
 )
 
 // A Directory represents a physical directory on the file system. files and dirs contain only the immediate child
@@ -50,8 +49,8 @@ func (d *Directory) ComputeDirectoryChecksums() (string, error) {
 
 	if d.isSymbolicLink && (len(d.dirs) > 0 || len(d.files) > 0) {
 		// Can never happen, so let's log it :-)
-		return "", errors.New(fmt.Sprintf("Directory is a symbolic link, but found %d sub-files "+
-			"and %d sub-dirs", len(d.files), len(d.dirs)))
+		return "", fmt.Errorf("directory is a symbolic link, but found %d sub-files "+
+			"and %d sub-dirs", len(d.files), len(d.dirs))
 	}
 
 	if d.isSymbolicLink {
