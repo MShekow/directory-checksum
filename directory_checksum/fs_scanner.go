@@ -31,15 +31,15 @@ func bendRelativePath(relativePath, absoluteRootPath string) string {
 
 // ScanDirectory returns the pointer to a (hierarchically-nested) Directory that is constructed from recursively walking
 // the directory located at absoluteRootPath.
-func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs, osWrapper OsWrapper) (*Directory, error) {
-	absoluteRootPath = filepath.FromSlash(absoluteRootPath)
-	if absoluteRootPath == "." {
-		absRoot, err := osWrapper.Getwd()
+func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs) (*Directory, error) {
+	// Handle a special case that happens only during unit testing (where root is '\' when executed on Windows)
+	if absoluteRootPath != "\\" {
+		absRootPath, err := filepath.Abs(absoluteRootPath)
 		if err != nil {
 			debug.PrintStack()
 			return nil, err
 		}
-		absoluteRootPath = absRoot
+		absoluteRootPath = absRootPath
 	}
 
 	directory := newDirectory()
