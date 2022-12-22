@@ -1,6 +1,6 @@
 # Directory Checksum
 
-![Coverage](https://img.shields.io/badge/Coverage-96.6%25-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-87.8%25-brightgreen)
 ![CI](https://github.com/MShekow/directory-checksum/actions/workflows/ci.yml/badge.svg)
 ![CD](https://github.com/MShekow/directory-checksum/actions/workflows/cd.yml/badge.svg)
 
