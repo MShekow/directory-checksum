@@ -7,9 +7,10 @@ import (
 	"github.com/spf13/afero"
 	"log"
 	"os"
+	"runtime/debug"
 )
 
-const version = "1.0"
+const version = "1.1"
 
 var maxDepth int
 
@@ -36,8 +37,9 @@ func main() {
 	}
 
 	root := flag.Arg(0)
-	directory, err := directory_checksum.ScanDirectory(root, afero.NewOsFs(), directory_checksum.OsWrapperNative{})
+	directory, err := directory_checksum.ScanDirectory(root, afero.NewOsFs())
 	if err != nil {
+		debug.PrintStack()
 		log.Fatalf("Unable to scan the directory: %v", err)
 	}
 	_, err = directory.ComputeDirectoryChecksums()
