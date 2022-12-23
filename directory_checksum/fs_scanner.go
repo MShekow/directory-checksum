@@ -18,7 +18,8 @@ func bendRelativePath(relativePath, absoluteRootPath string) string {
 			For absoluteRootPath = "/foo" and relativePath "/foo/bar", we need an extraLengthCutoff of 1, to turn
 			relativePath into "bar".
 
-			But for absoluteRootPath = "/" and relativePath "/foo/bar", extraLengthCutoff must be 0, to avoid a bad result.
+			But for absoluteRootPath = "/" and relativePath "/foo/bar", extraLengthCutoff must be 0, to avoid the bad
+			result "oo/bar".
 		*/
 		isAbsRoot := absoluteRootPath == "/" || absoluteRootPath == "\\"
 		extraLengthCutoff := 1
@@ -28,31 +29,6 @@ func bendRelativePath(relativePath, absoluteRootPath string) string {
 		relativePath = relativePath[len(absoluteRootPath)+extraLengthCutoff:]
 	}
 	return relativePath
-}
-
-func isSymbolicLinkToDirectory(relativePath, absoluteRootPath string, filesystemImpl afero.Fs) (bool, error) {
-	linkReader, ok := filesystemImpl.(afero.LinkReader)
-	if !ok {
-		return false, nil
-	}
-
-	absolutePath := filepath.Join(absoluteRootPath, relativePath)
-	linkTarget, err := linkReader.ReadlinkIfPossible(absolutePath)
-	if err != nil {
-		debug.PrintStack()
-		return false, err
-	}
-
-	if !filepath.IsAbs(linkTarget) {
-		linkTarget = filepath.Join(absoluteRootPath, filepath.Dir(relativePath), linkTarget)
-	}
-
-	stat, err := filesystemImpl.Stat(linkTarget)
-	if err != nil {
-		debug.PrintStack()
-		return false, err
-	}
-	return stat.IsDir(), nil
 }
 
 // ScanDirectory returns the pointer to a (hierarchically-nested) Directory that is constructed from recursively walking
@@ -68,7 +44,7 @@ func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs) (*Directory
 		absoluteRootPath = absRootPath
 	}
 
-	directory := newDirectory(false)
+	directory := newDirectory()
 	err := afero.Walk(filesystemImpl, absoluteRootPath, func(relativePath string, info fs.FileInfo, err error) error {
 		if err != nil {
 			debug.PrintStack()
@@ -86,14 +62,7 @@ func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs) (*Directory
 			if info.IsDir() {
 				fileType = TypeDir
 			} else if info.Mode()&os.ModeSymlink == os.ModeSymlink {
-				// We cannot trust the IsDir() output - it counts symbolic links to DIRS to be files
-				isDir, err := isSymbolicLinkToDirectory(relativePath, absoluteRootPath, filesystemImpl)
-				if err != nil {
-					return err
-				}
-				if isDir {
-					fileType = TypeDirSymlink
-				}
+				fileType = TypeSymlink
 			}
 
 			err := directory.Add(relativePath, relativePath, absoluteRootPath, fileType, filesystemImpl)
