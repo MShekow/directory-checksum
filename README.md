@@ -51,11 +51,14 @@ d1fbe91a2253ba9de3ced8f95ea7a8b30d436727 F main.go
 Explanation of columns:
 
 - First column shows **SHA-1** checksum of files and directories.
-    - For _files_, only the binary file content is used for computing the checksum, all other meta-data (e.g. owner) are
-      ignored
-    - For _directories_, the checksum is the **SHA-1** checksum of a long string that represents the listing of the
-      _immediate_ children, only considering their _names_ and checksums
-- Second column: `D`=_directory_, `F`=_file_, `S`=_symbolic link_
+    - For normal _files_, only the binary file content is used for computing the checksum, all other meta-data (e.g.
+      owner or creation date) are ignored
+    - For _directories_, the checksum is computed on a long string that represents the _listing_ of the directory's
+      _immediate_ children, only considering their _names_ and checksums (note: for _files_, we additionally take into
+      account whether it is a normal file, or a symbolic link)
+    - For _symbolic links_ (which are _files_ whose "content" is an absolute or relative target path), the checksum is
+      computed on the target path
+- Second column: `D`=_directory_, `F`=_file_, `S`=_symbolic link (file)_
 - Third column: the path _relative_ to the scanned directory's path
 
 Note: the first line always shows the checksum of the scanned directory itself.
