@@ -12,7 +12,7 @@ func TestComputeChecksum(t *testing.T) {
 	f.WriteString("Hello World")
 	f.Close()
 
-	got, _ := computeChecksum(tempFilePath, filesystemImpl)
+	got, _ := computeFileChecksum(tempFilePath, false, filesystemImpl)
 	want := "0a4d55a8d778e5022fab701977c5d840bbc486d0"
 
 	if got != want {
@@ -23,7 +23,7 @@ func TestComputeChecksum(t *testing.T) {
 func TestNonExistingFile(t *testing.T) {
 	filesystemImpl := afero.NewMemMapFs()
 
-	_, err := computeChecksum("does-not-exist", filesystemImpl)
+	_, err := computeFileChecksum("does-not-exist", false, filesystemImpl)
 
 	if err == nil {
 		t.Fatal("Expected error but did not get any")
@@ -40,7 +40,7 @@ func TestUnreadableFile(t *testing.T) {
 	wrapper := fsWrapper{filesystemImpl}
 	filesystemImpl = &wrapper
 
-	_, err := computeChecksum("/tmpfile", filesystemImpl)
+	_, err := computeFileChecksum("/tmpfile", false, filesystemImpl)
 
 	if err == nil {
 		t.Fatal("Expected error but did not get any")

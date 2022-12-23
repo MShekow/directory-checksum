@@ -95,7 +95,7 @@ func TestSingleFile(t *testing.T) {
 	d.ComputeDirectoryChecksums()
 	got := d.PrintChecksums(1)
 
-	want := "beb8daa61290acf19e174a689715f32c51b644b6 D .\n" +
+	want := "7b06b8230df4bf1aacb85eb46f410bf9403e6038 D .\n" +
 		"0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33 F f\n"
 
 	if got != want {
@@ -219,7 +219,7 @@ func TestScanWithDirectorySymlink(t *testing.T) {
 	filesystemImpl := afero.NewOsFs()
 	targetPath := filepath.Join(tempDir, "dir-target")
 	os.Mkdir(targetPath, fs.ModePerm)
-	err := os.Symlink(targetPath, filepath.Join(tempDir, "dir-source"))
+	err := os.Symlink("dir-target", filepath.Join(tempDir, "./dir-source"))
 	if err != nil {
 		t.Skipf("Test skipped because creating the symbolic link failed (most likely cause is Windows, where "+
 			"admin privileges are required). Error: %v", err)
@@ -228,9 +228,9 @@ func TestScanWithDirectorySymlink(t *testing.T) {
 	d.ComputeDirectoryChecksums()
 	got := d.PrintChecksums(1)
 
-	want := "a268439d8e48cf54d10a7eb64b63c1902207dd40 D .\n" +
-		"0000000000000000000000000000000000000000 S dir-source\n" +
-		"da39a3ee5e6b4b0d3255bfef95601890afd80709 D dir-target\n"
+	want := "14b86a68c6820d52ac6603d3f84317255e88b4ed D .\n" +
+		"da39a3ee5e6b4b0d3255bfef95601890afd80709 D dir-target\n" +
+		"51386830a6c5a495a39f7a8c17b2fc327240f699 S dir-source\n"
 	if got != want {
 		t.Fatalf("Got\n%s\n\nwant\n%s", got, want)
 	}
