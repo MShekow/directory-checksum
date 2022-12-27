@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"github.com/MShekow/directory-checksum/directory_checksum"
+	"github.com/go-errors/errors"
 	"github.com/spf13/afero"
 	"log"
 	"os"
-	"runtime/debug"
 )
 
 const version = "1.2"
@@ -39,12 +39,23 @@ func main() {
 	root := flag.Arg(0)
 	directory, err := directory_checksum.ScanDirectory(root, afero.NewOsFs())
 	if err != nil {
-		debug.PrintStack()
-		log.Fatalf("Unable to scan the directory: %v", err)
+		if errorWithStacktrace, ok := err.(*errors.Error); ok {
+			fmt.Println("Unable to scan the directory:")
+			fmt.Println(errorWithStacktrace.ErrorStack())
+		} else {
+			fmt.Printf("Unable to scan the directory: %v\n", err)
+		}
+		os.Exit(1)
 	}
 	_, err = directory.ComputeDirectoryChecksums()
 	if err != nil {
-		log.Fatalf("Unexpected error while computing directory checksums: %v", err)
+		if errorWithStacktrace, ok := err.(*errors.Error); ok {
+			fmt.Println("Unexpected error while computing directory checksum:")
+			fmt.Println(errorWithStacktrace.ErrorStack())
+		} else {
+			fmt.Printf("Unexpected error while computing directory checksums: %v\n", err)
+		}
+		os.Exit(1)
 	}
 	output := directory.PrintChecksums(maxDepth)
 	fmt.Print(output)

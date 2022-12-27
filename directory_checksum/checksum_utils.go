@@ -3,10 +3,9 @@ package directory_checksum
 import (
 	"crypto/sha1"
 	"encoding/hex"
-	"fmt"
+	"github.com/go-errors/errors"
 	"github.com/spf13/afero"
 	"io"
-	"runtime/debug"
 )
 
 // computeFileChecksum computes the SHA-1 digest of the file located at absoluteFilePath and returns it as string that
@@ -16,33 +15,31 @@ func computeFileChecksum(absoluteFilePath string, isSymbolicLink bool, filesyste
 	if isSymbolicLink {
 		linkReader, ok := filesystemImpl.(afero.LinkReader)
 		if !ok {
-			return "", fmt.Errorf("unable to compute checksum for symbolic link file %s: file system is "+
+			return "", errors.Errorf("unable to compute checksum for symbolic link file %s: file system is "+
 				"unable to read links", absoluteFilePath)
 		}
 
 		linkTarget, err := linkReader.ReadlinkIfPossible(absoluteFilePath)
 		if err != nil {
-			debug.PrintStack()
-			return "", err
+			return "", errors.Wrap(err, 0)
 		}
 
 		hasher := sha1.New()
 		_, err = io.WriteString(hasher, linkTarget)
 		if err != nil {
-			debug.PrintStack()
-			return "", err
+			return "", errors.Wrap(err, 0)
 		}
 		return hex.EncodeToString(hasher.Sum(nil)), nil
 	} else {
 		f, err := filesystemImpl.Open(absoluteFilePath)
 		if err != nil {
-			return "", err
+			return "", errors.Wrap(err, 0)
 		}
 		defer f.Close()
 
 		h := sha1.New()
 		if _, err := io.Copy(h, f); err != nil {
-			return "", err
+			return "", errors.Wrap(err, 0)
 		}
 
 		return hex.EncodeToString(h.Sum(nil)), nil
