@@ -4,11 +4,11 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"github.com/go-errors/errors"
 	"github.com/spf13/afero"
 	"io"
 	"os"
 	"path/filepath"
-	"runtime/debug"
 	"strings"
 )
 
@@ -58,8 +58,7 @@ func (d *Directory) ComputeDirectoryChecksums() (string, error) {
 
 		_, err = io.WriteString(hasher, fmt.Sprintf("'%s' %s\n", dirName, childDirChecksum))
 		if err != nil {
-			debug.PrintStack()
-			return "", err
+			return "", errors.Wrap(err, 0)
 		}
 	}
 	for _, fileName := range sortedKeys(d.files) {
@@ -67,8 +66,7 @@ func (d *Directory) ComputeDirectoryChecksums() (string, error) {
 		_, err := io.WriteString(hasher, fmt.Sprintf("'%s' %t %s\n", fileName, childFile.isSymbolicLink,
 			childFile.checksum))
 		if err != nil {
-			debug.PrintStack()
-			return "", err
+			return "", errors.Wrap(err, 0)
 		}
 	}
 
@@ -120,7 +118,7 @@ func (d *Directory) Add(relativeRemainingPath string, relativePath string, absol
 		subDir := d.dirs[components[0]]
 		err := subDir.Add(components[1], relativePath, absoluteRootPath, fileType, filesystemImpl)
 		if err != nil {
-			return err
+			return errors.Wrap(err, 0)
 		}
 	} else {
 		if fileType == TypeDir {
@@ -130,8 +128,7 @@ func (d *Directory) Add(relativeRemainingPath string, relativePath string, absol
 			isSymbolicLink := fileType == TypeSymlink
 			fileChecksum, err := computeFileChecksum(absoluteFilePath, isSymbolicLink, filesystemImpl)
 			if err != nil {
-				debug.PrintStack()
-				return err
+				return errors.Wrap(err, 0)
 			}
 			d.files[relativeRemainingPath] = &File{
 				checksum:       fileChecksum,
