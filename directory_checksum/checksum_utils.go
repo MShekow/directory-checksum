@@ -3,6 +3,7 @@ package directory_checksum
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"fmt"
 	"github.com/go-errors/errors"
 	"github.com/spf13/afero"
 	"io"
@@ -35,7 +36,12 @@ func computeFileChecksum(absoluteFilePath string, isSymbolicLink bool, filesyste
 		if err != nil {
 			return "", errors.Wrap(err, 0)
 		}
-		defer f.Close()
+		defer func(f afero.File) {
+			err := f.Close()
+			if err != nil {
+				fmt.Printf("Unable to close file %s in computeFileChecksum(): %v\n", absoluteFilePath, err)
+			}
+		}(f)
 
 		h := sha1.New()
 		if _, err := io.Copy(h, f); err != nil {
