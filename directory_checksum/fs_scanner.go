@@ -1,12 +1,11 @@
 package directory_checksum
 
 import (
-	"errors"
+	"github.com/go-errors/errors"
 	"github.com/spf13/afero"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"runtime/debug"
 	"strings"
 )
 
@@ -38,8 +37,7 @@ func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs) (*Directory
 	if absoluteRootPath != "\\" {
 		absRootPath, err := filepath.Abs(absoluteRootPath)
 		if err != nil {
-			debug.PrintStack()
-			return nil, err
+			return nil, errors.Wrap(err, 0)
 		}
 		absoluteRootPath = absRootPath
 	}
@@ -47,8 +45,7 @@ func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs) (*Directory
 	directory := newDirectory()
 	err := afero.Walk(filesystemImpl, absoluteRootPath, func(relativePath string, info fs.FileInfo, err error) error {
 		if err != nil {
-			debug.PrintStack()
-			return err
+			return errors.Wrap(err, 0)
 		}
 		// Walk() is happy to walk a FILE (instead of a dir) -> we have to manually check that a dir path was provided
 		if absoluteRootPath == relativePath && !info.IsDir() {
@@ -67,14 +64,13 @@ func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs) (*Directory
 
 			err := directory.Add(relativePath, relativePath, absoluteRootPath, fileType, filesystemImpl)
 			if err != nil {
-				return err
+				return errors.Wrap(err, 0)
 			}
 		}
 		return nil
 	})
 	if err != nil {
-		debug.PrintStack()
-		return nil, err
+		return nil, errors.Wrap(err, 0)
 	}
 
 	return directory, nil
