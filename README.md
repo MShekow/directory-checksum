@@ -14,9 +14,10 @@ This tool is a _proper_ (as in: actually working) alternative to tools that igno
 as [md5deep](https://md5deep.sourceforge.net/), or chaining UNIX such as `find` and `md5sum` (see
 e.g. [here](https://unix.stackexchange.com/a/35834)).
 
-See here TODO for background information why I wrote this tool. Its primary use case is to debug layer caching issues
-with Docker, BuildKit, Buildah or other OCI image builder tools, which rebuild a layer with a `COPY` or `ADD` statement,
-even though you think it should not have been rebuilt, because none of the files have changed.
+See [here](https://www.augmentedmind.de/2023/01/08/docker-build-cache-debug/) for background information why I
+wrote this tool. Its primary use case is to debug layer caching issues with Docker, BuildKit, Buildah or other OCI image
+builder tools, which rebuild a layer with a `COPY` or `ADD` statement, even though you think it should not have been
+rebuilt, because none of the files have changed.
 
 ## Example output
 
