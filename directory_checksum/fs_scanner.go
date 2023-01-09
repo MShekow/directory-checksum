@@ -1,6 +1,7 @@
 package directory_checksum
 
 import (
+	"fmt"
 	"github.com/go-errors/errors"
 	"github.com/spf13/afero"
 	"io/fs"
@@ -30,10 +31,37 @@ func bendRelativePath(relativePath, absoluteRootPath string) string {
 	return relativePath
 }
 
+// isInvalidFiletype returns true if the provided file mode is of some irregular mode of which a checksum cannot be
+// calculated, false otherwise.
+func isInvalidFiletype(mode fs.FileMode) bool {
+	return mode&fs.ModeIrregular == fs.ModeIrregular || mode&fs.ModeCharDevice == fs.ModeCharDevice ||
+		mode&fs.ModeSocket == fs.ModeSocket || mode&fs.ModeNamedPipe == fs.ModeNamedPipe ||
+		mode&fs.ModeDevice == fs.ModeDevice
+}
+
+func getInvalidFiletypeAsString(mode fs.FileMode) string {
+	if mode&fs.ModeIrregular == fs.ModeIrregular {
+		return "non-regular/irregular"
+	}
+	if mode&fs.ModeCharDevice == fs.ModeCharDevice {
+		return "character device"
+	}
+	if mode&fs.ModeSocket == fs.ModeSocket {
+		return "socket"
+	}
+	if mode&fs.ModeNamedPipe == fs.ModeNamedPipe {
+		return "named pipe"
+	}
+	if mode&fs.ModeDevice == fs.ModeDevice {
+		return "device"
+	}
+	return ""
+}
+
 // ScanDirectory returns the pointer to a (hierarchically-nested) Directory that is constructed from recursively walking
 // the directory located at absoluteRootPath.
 func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs) (*Directory, error) {
-	// Handle a special case that happens only during unit testing (where root is '\' when executed on Windows)
+	// Handle a special case that happens only during unit testing (where root is '\' when executed on Windows
 	if absoluteRootPath != "\\" {
 		absRootPath, err := filepath.Abs(absoluteRootPath)
 		if err != nil {
@@ -60,6 +88,12 @@ func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs) (*Directory
 				fileType = TypeDir
 			} else if info.Mode()&os.ModeSymlink == os.ModeSymlink {
 				fileType = TypeSymlink
+			}
+
+			if isInvalidFiletype(info.Mode()) {
+				fmt.Printf("WARNING: skipping '%s' because it is of unsupported type: %s\n", relativePath,
+					getInvalidFiletypeAsString(info.Mode()))
+				return nil
 			}
 
 			err := directory.Add(relativePath, relativePath, absoluteRootPath, fileType, filesystemImpl)
