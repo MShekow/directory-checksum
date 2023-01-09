@@ -91,7 +91,7 @@ func ScanDirectory(absoluteRootPath string, filesystemImpl afero.Fs) (*Directory
 			}
 
 			if isInvalidFiletype(info.Mode()) {
-				fmt.Printf("Skipping %s because it is of unsupported type: %s", relativePath,
+				fmt.Printf("WARNING: skipping '%s' because it is of unsupported type: %s\n", relativePath,
 					getInvalidFiletypeAsString(info.Mode()))
 				return nil
 			}
