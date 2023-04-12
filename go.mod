@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/go-errors/errors v1.4.2
-	github.com/spf13/afero v1.9.3
+	github.com/spf13/afero v1.9.5
 )
 
-require golang.org/x/text v0.3.4 // indirect
+require golang.org/x/text v0.3.7 // indirect
