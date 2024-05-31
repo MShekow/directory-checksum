@@ -24,7 +24,7 @@ jobs:
       - uses: dominikh/staticcheck-action@v1.3.1
         with:
           # renovate: datasource=github-tags depName=dominikh/go-tools versioning=semver
-          version: "2023.1.3"
+          version: "2023.1.7"
           install-go: false
 
       - name: Run tests
