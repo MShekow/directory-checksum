@@ -34,7 +34,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           # renovate: datasource=golang-version depName=go versioning=semver
-          go-version: "1.21.11"
+          go-version: "1.22.5"
         if: steps.scan_latest_release.outcome == 'failure'
 
       - name: Verify dependencies
