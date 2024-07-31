@@ -9,7 +9,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     name: Update coverage badge
-    if: !startsWith(github.head_ref, 'renovate/')
+    if: ${{ !startsWith(github.head_ref, 'renovate/') }}  # requires quoting or surrounding ${{}} due to special ! meaning in yaml
     steps:
       - name: Checkout
         uses: actions/checkout@v4
