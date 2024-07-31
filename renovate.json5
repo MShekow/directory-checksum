@@ -8,6 +8,13 @@
   "vulnerabilityAlerts": {
     "labels": ["security", "dependencies"],
   },
+  "platformAutomerge": false, // due to a lack of branch protection rules, we want to ensure tests pass before merging
+  "packageRules": [
+    {
+      "matchDatasources": ["go", "golang-version"],
+      "automerge": true,
+    }
+  ],
   "customManagers": [
     {
       "customType": "regex",
