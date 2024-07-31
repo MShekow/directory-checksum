@@ -8,8 +8,6 @@ on:
 jobs:
   release-security-patch-release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write  # required by anothrNick/github-tag-action
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,7 +60,9 @@ jobs:
         if: steps.scan_latest_build.outcome == 'success'
         uses: anothrNick/github-tag-action@1.70.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Note: we use a custom PAT, because secrets.GITHUB_TOKEN has a limitation that tags pushed with it
+          # will NOT trigger workflows that are configured for "on -> push -> tags")
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           WITH_V: true
           DEFAULT_BUMP: "patch"
           FORCE_WITHOUT_CHANGES: true
