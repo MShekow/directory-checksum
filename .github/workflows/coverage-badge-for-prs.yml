@@ -9,6 +9,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     name: Update coverage badge
+    if: !startsWith(github.head_ref, 'renovate/')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
