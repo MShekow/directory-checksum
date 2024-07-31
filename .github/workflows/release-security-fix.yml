@@ -28,6 +28,7 @@ jobs:
           path: "latest-release"
           fail-build: true
           severity-cutoff: negligible
+          output-format: table
         continue-on-error: true
 
       # If we found vulnerabilities, create a build for the default branch, where the vulnerabilities might be fixed
@@ -52,6 +53,7 @@ jobs:
           path: "latest-build"
           fail-build: true
           severity-cutoff: negligible
+          output-format: table
         continue-on-error: true
         if: steps.scan_latest_release.outcome == 'failure'
 
