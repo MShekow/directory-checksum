@@ -1,19 +1,19 @@
 name: Release security patch release
 
 on:
-  workflow_dispatch: {}
-#  schedule:
-#    - cron: "0 4 */2 * *"
+  workflow_dispatch: { }
+  schedule:
+    - cron: "0 4 */2 * *"
 
 jobs:
   release-security-patch-release:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write  # required by anothrNick/github-tag-action
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: '0'
+          fetch-depth: '0'  # required by anothrNick/github-tag-action
       - name: Download latest Linux release
         uses: robinraju/release-downloader@v1
         with:
@@ -60,13 +60,9 @@ jobs:
       # If the latest build has no vulnerabilities anymore, it makes sense to create a new patch-release automatically
       - name: Bump version and push tag
         if: steps.scan_latest_build.outcome == 'success'
-        run: "echo bump version tag"
-
-#      - name: Bump version and push tag
-#        if: steps.scan_latest_build.outcome == 'success'
-#        uses: anothrNick/github-tag-action@1.70.0
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          WITH_V: true
-#          DEFAULT_BUMP: "patch"
-#          FORCE_WITHOUT_CHANGES: true
+        uses: anothrNick/github-tag-action@1.70.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DEFAULT_BUMP: "patch"
+          FORCE_WITHOUT_CHANGES: true
