@@ -10,7 +10,8 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.21"
+          # renovate: datasource=golang-version depName=go versioning=semver
+          go-version: "1.21.11"
 
       - name: Verify dependencies
         run: go mod verify
