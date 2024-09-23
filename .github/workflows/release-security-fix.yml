@@ -59,7 +59,7 @@ jobs:
       # If the latest build has no vulnerabilities anymore, it makes sense to create a new patch-release automatically
       - name: Bump version and push tag
         if: steps.scan_latest_build.outcome == 'success'
-        uses: anothrNick/github-tag-action@1.70.0
+        uses: anothrNick/github-tag-action@1.71.0
         env:
           # Note: we use a custom PAT, because secrets.GITHUB_TOKEN has a limitation that tags pushed with it
           # will NOT trigger workflows that are configured for "on -> push -> tags")
