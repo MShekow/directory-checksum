@@ -21,7 +21,7 @@ jobs:
           out-file-path: 'latest-release'  # auto-creates the folder
       - name: Scan Linux release for vulnerabilities
         id: scan_latest_release
-        uses: anchore/scan-action@v5
+        uses: anchore/scan-action@v6
         with:
           path: "latest-release"
           fail-build: true
@@ -47,7 +47,7 @@ jobs:
 
       - name: Scan built Linux binary for vulnerabilities
         id: scan_latest_build
-        uses: anchore/scan-action@v5
+        uses: anchore/scan-action@v6
         with:
           path: "latest-build"
           fail-build: true
