@@ -81,6 +81,26 @@ Thanks to _Directory Checksum_, you can now easily debug the problem, by modifyi
       use `ADD --chmod=755 <URL> /usr/local/bin/directory-checksum`. You may need to put the
       line `# syntax=docker/dockerfile:1` as first line into your `Dockerfile` to use an updated _frontend_,
       see [here](https://docs.docker.com/build/buildkit/dockerfile-frontend/)
+    - Since v1.4.7, we provide _build provenance_ attestations, which means that you can cryptographically verify that
+      the binary was _really_ built by a GitHub Actions workflow of this repository. To verify this, you can use the
+      following _multi-stage_ build trick that uses the GitHub [CLI](https://github.com/cli/cli) to verify the attestation:
+      ```dockerfile
+      # syntax=docker/dockerfile:1
+      # Build this via: docker build --secret id=github-pat,env=ENV_VAR_NAME_CONTAINING_THE_PAT -t some-image:tag .
+      FROM redhat/ubi9:latest AS tools
+      ADD --chmod=755 https://github.com/MShekow/directory-checksum/releases/download/v1.4.7/directory-checksum_1.4.7_linux_amd64 /directory-checksum
+      # Using instructions from https://github.com/cli/cli/blob/75a23e73eb229ee9dd4e18708c14c4cf646385dd/docs/install_linux.md#dnf4
+      RUN dnf install -y 'dnf-command(config-manager)' && \
+      dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo && \
+      dnf install -y git && \
+      dnf install -y gh --repo gh-cli
+      RUN --mount=type=secret,id=github-pat,env=GH_TOKEN gh attestation verify /directory-checksum --repo MShekow/directory-checksum
+      
+      FROM whatever:you-want
+      COPY --from=tools /directory-checksum /usr/local/bin/directory-checksum
+      ```
+      Note: the GitHub CLI needs a GitHub Personal Access Token (PAT). _Any_ PAT will work, it does not need any scopes
+      or permissions.
 - Add a statement such as `RUN directory-checksum --max-depth 2 .` to print the checksums of the directory.
     - Replace `2` with any other depth-level, if desired. A too large number will produce too much output, a too small
       number may provide too few details (especially when something changed in the deeper levels of the folder
