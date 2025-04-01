@@ -2,7 +2,7 @@ module github.com/MShekow/directory-checksum
 
 go 1.23.0
 
-toolchain go1.24.1
+toolchain go1.24.2
 
 require (
 	github.com/go-errors/errors v1.5.1
