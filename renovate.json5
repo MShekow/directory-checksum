@@ -18,6 +18,11 @@
       // Note: Renovate now natively detects Go versions declared in the "with" block of actions/setup-go, for the "github-releases" datasource
       "matchDepNames": ["go"],
       "automerge": true
+    },
+    {
+      "description": "Auto-update GitHub Actions",
+      "matchDepTypes": ["action"],
+      "automerge": true
     }
   ],
   "customManagers": [
