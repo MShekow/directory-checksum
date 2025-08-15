@@ -20,10 +20,11 @@
       "automerge": true
     },
     {
-      "description": "Auto-update GitHub Actions and pin their digest",
+      "description": "Auto-update GitHub Actions and pin their digest, merging the PRs only after 14 days (hopefully enough time for the community to detect bad releases)",
       "matchDepTypes": ["action"],
       "automerge": true,
-      "pinDigests": true
+      "pinDigests": true,
+      "minimumReleaseAge": "14 days"
     }
   ],
   "customManagers": [
