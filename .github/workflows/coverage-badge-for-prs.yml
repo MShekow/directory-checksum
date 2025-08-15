@@ -12,13 +12,13 @@ jobs:
     if: ${{ !startsWith(github.head_ref, 'renovate/') }}  # requires quoting or surrounding ${{}} due to special ! meaning in yaml
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
           fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5
         with:
           go-version: "1.25.0"
 
@@ -28,12 +28,12 @@ jobs:
           go tool cover -func=coverage.out -o=coverage.out
 
       - name: Go Coverage Badge
-        uses: tj-actions/coverage-badge-go@v3
+        uses: tj-actions/coverage-badge-go@481919ec72da287775fef015fd9011dc75a5db05 # v3
         with:
           filename: coverage.out
 
       - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v20
+        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
         id: verify-changed-files
         with:
           files: README.md
