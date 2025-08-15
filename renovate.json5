@@ -20,9 +20,10 @@
       "automerge": true
     },
     {
-      "description": "Auto-update GitHub Actions",
+      "description": "Auto-update GitHub Actions and pin their digest",
       "matchDepTypes": ["action"],
-      "automerge": true
+      "automerge": true,
+      "pinDigests": true
     }
   ],
   "customManagers": [
