@@ -5,10 +5,10 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5
         with:
           go-version: "1.25.0"
 
@@ -21,7 +21,7 @@ jobs:
       - name: Run go vet
         run: go vet ./...
 
-      - uses: dominikh/staticcheck-action@v1.4.0
+      - uses: dominikh/staticcheck-action@024238d2898c874f26d723e7d0ff4308c35589a2 # v1.4.0
         with:
           # renovate: datasource=github-tags depName=dominikh/go-tools versioning=semver
           version: "2025.1.1"
