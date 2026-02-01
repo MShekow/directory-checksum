@@ -24,7 +24,7 @@ jobs:
           go-version: "1.25.6"
 
       - name: Download Syft (to generate SBOMs)
-        uses: anchore/sbom-action/download-syft@8e94d75ddd33f69f691467e42275782e4bfefe84 # v0
+        uses: anchore/sbom-action/download-syft@deef08a0db64bfad603422135db61477b16cef56 # v0
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6
