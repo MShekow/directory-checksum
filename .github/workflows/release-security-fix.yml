@@ -9,11 +9,11 @@ jobs:
   release-security-patch-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: '0'  # required by anothrNick/github-tag-action
       - name: Download latest Linux release
-        uses: robinraju/release-downloader@daf26c55d821e836577a15f77d86ddc078948b05 # v1
+        uses: robinraju/release-downloader@v1.12
         with:
           repository: ${{ github.repository }}
           latest: true
@@ -21,7 +21,7 @@ jobs:
           out-file-path: 'latest-release'  # auto-creates the folder
       - name: Scan Linux release for vulnerabilities
         id: scan_latest_release
-        uses: anchore/scan-action@8d2fce09422cd6037e577f4130e9b925e9a37175 # v7
+        uses: anchore/scan-action@v7.3.2
         with:
           path: "latest-release"
           fail-build: true
@@ -31,7 +31,7 @@ jobs:
 
       # If we found vulnerabilities, create a build for the default branch, where the vulnerabilities might be fixed
       - name: Set up Go
-        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
+        uses: actions/setup-go@v6.2.0
         with:
           go-version: "1.26.0"
         if: steps.scan_latest_release.outcome == 'failure'
@@ -46,7 +46,7 @@ jobs:
 
       - name: Scan built Linux binary for vulnerabilities
         id: scan_latest_build
-        uses: anchore/scan-action@8d2fce09422cd6037e577f4130e9b925e9a37175 # v7
+        uses: anchore/scan-action@v7.3.2
         with:
           path: "latest-build"
           fail-build: true
@@ -58,7 +58,7 @@ jobs:
       # If the latest build has no vulnerabilities anymore, it makes sense to create a new patch-release automatically
       - name: Bump version and push tag
         if: steps.scan_latest_build.outcome == 'success'
-        uses: anothrNick/github-tag-action@4ed44965e0db8dab2b466a16da04aec3cc312fd8 # 1.75.0
+        uses: anothrNick/github-tag-action@1.75.0
         env:
           # Note: we use a custom PAT, because secrets.GITHUB_TOKEN has a limitation that tags pushed with it
           # will NOT trigger workflows that are configured for "on -> push -> tags")
