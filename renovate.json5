@@ -1,39 +1,52 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
-    ":disableRateLimiting"
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
+    ':disableRateLimiting',
   ],
-  "labels": ["dependencies"],
-  "vulnerabilityAlerts": {
-    "labels": ["security", "dependencies"],
+  labels: [
+    'dependencies',
+  ],
+  vulnerabilityAlerts: {
+    labels: [
+      'security',
+      'dependencies',
+    ],
   },
-  "platformAutomerge": false, // due to a lack of branch protection rules, we want to ensure tests pass before merging
-  "packageRules": [
+  platformAutomerge: false,
+  packageRules: [
     {
-      "matchDatasources": ["go", "golang-version"],
-      "automerge": true,
+      matchDatasources: [
+        'go',
+        'golang-version',
+      ],
+      automerge: true,
     },
     {
-      // Note: Renovate now natively detects Go versions declared in the "with" block of actions/setup-go, for the "github-releases" datasource
-      "matchDepNames": ["go"],
-      "automerge": true
+      matchDepNames: [
+        'go',
+      ],
+      automerge: true,
     },
     {
-      "description": "Auto-update GitHub Actions, merging the PRs only after 14 days (hopefully enough time for the community to detect bad releases)",
-      "matchDepTypes": ["action"],
-      "automerge": true,
-      "minimumReleaseAge": "14 days"
-    }
+      description: 'Auto-update GitHub Actions, merging the PRs only after 14 days (hopefully enough time for the community to detect bad releases)',
+      matchDepTypes: [
+        'action',
+      ],
+      automerge: true,
+      minimumReleaseAge: '14 days',
+    },
   ],
-  "customManagers": [
+  customManagers: [
     {
-      "customType": "regex",
-      "description": "Match 'somekey: someversion' in GitHub workflow files, assuming a preceding line has this form: # renovate: datasource=... depName=... versioning=",
-      "fileMatch": ["^\\.github\\/workflows\\/.*\\.ya?ml$"],
-      "matchStrings": [
-        "datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\s *.*: \"?(?<currentValue>[a-zA-Z0-9.]*)\"?\\s"
-      ]
-    }
-  ]
+      customType: 'regex',
+      description: "Match 'somekey: someversion' in GitHub workflow files, assuming a preceding line has this form: # renovate: datasource=... depName=... versioning=",
+      managerFilePatterns: [
+        '/^\\.github\\/workflows\\/.*\\.ya?ml$/',
+      ],
+      matchStrings: [
+        'datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\s *.*: "?(?<currentValue>[a-zA-Z0-9.]*)"?\\s',
+      ],
+    },
+  ],
 }
