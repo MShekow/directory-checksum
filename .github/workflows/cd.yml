@@ -36,6 +36,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/attest-build-provenance@v4.0.0
+      - uses: actions/attest-build-provenance@v4.1.0
         with:
           subject-checksums: ./dist/checksums.txt
