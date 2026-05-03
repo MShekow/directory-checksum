@@ -13,7 +13,7 @@ jobs:
         with:
           fetch-depth: '0'  # required by anothrNick/github-tag-action
       - name: Download latest Linux release
-        uses: robinraju/release-downloader@daf26c55d821e836577a15f77d86ddc078948b05 # v1.12
+        uses: robinraju/release-downloader@28fc21f50d76778e7023361aa1f863e717d3d56f # v1.13
         with:
           repository: ${{ github.repository }}
           latest: true
