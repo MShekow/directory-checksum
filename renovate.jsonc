@@ -31,7 +31,9 @@
     {
       "customType": "regex",
       "description": "Match 'somekey: someversion' in GitHub workflow files, assuming a preceding line has this form: # renovate: datasource=... depName=... versioning=",
-      "fileMatch": ["^\\.github\\/workflows\\/.*\\.ya?ml$"],
+      "managerFilePatterns": [
+        "/^\\.github\\/workflows\\/.*\\.ya?ml$/"
+      ],
       "matchStrings": [
         "datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\s *.*: \"?(?<currentValue>[a-zA-Z0-9.]*)\"?\\s"
       ]
