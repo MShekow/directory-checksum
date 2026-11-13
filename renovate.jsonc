@@ -10,8 +10,10 @@
     "labels": ["security", "dependencies"],
   },
   "platformAutomerge": false, // due to a lack of branch protection rules, we want to ensure tests pass before merging
+  "postUpdateOptions": ["gomodUpdateImportPaths"], // rewrite import paths on major bumps so they compile
   "packageRules": [
     {
+      "description": "Automerge all Go module and Go version updates, including major ones",
       "matchDatasources": ["go", "golang-version"],
       "automerge": true,
     },
@@ -25,6 +27,12 @@
       "matchDepTypes": ["action"],
       "automerge": true,
       "minimumReleaseAge": "14 days"
+    },
+    {
+      "description": "Auto-update dominikh/go-tools detect via github-tags data source in GitHub Actions",
+      "matchPackageNames": ["dominikh/go-tools"],
+      "automerge": true,
+      "minimumReleaseAge": "5 days"
     }
   ],
   "customManagers": [
